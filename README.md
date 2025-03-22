@@ -1,3 +1,22 @@
+# Docker NodeMCU build in a Github workflow
+
+This is a fork of https://github.com/marcelstoer/docker-nodemcu-build/tree/feat/idf-4,
+but supports idf-5 (https://github.com/espressif/esp-idf) used in https://github.com/nodemcu/nodemcu-firmware/blob/dev-esp32/README.md .
+Flashing is documented in https://nodemcu.readthedocs.io/en/dev-esp32/flash/
+ .
+
+Quick flash instructions:
+
+    wget https://github.com/matgoebl/docker-nodemcu-build/releases/download/v0.0.1/nodemcu_full_0x0.bin
+    python3 -m venv .venv
+    . .venv/bin/activate
+    python3 -m pip install esptool
+    esptool.py --port /dev/ttyUSB0 flash_id
+    esptool.py --port /dev/ttyUSB0 write_flash --erase-all 0x0 nodemcu_full_0x0.bin 
+
+
+--- original README follows ---
+
 # Docker NodeMCU build and LFS images
 [![Docker Pulls](https://img.shields.io/docker/pulls/marcelstoer/nodemcu-build.svg)](https://hub.docker.com/r/marcelstoer/nodemcu-build/) [![Docker Stars](https://img.shields.io/docker/stars/marcelstoer/nodemcu-build.svg)](https://hub.docker.com/r/marcelstoer/nodemcu-build/) [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/marcelstoer/docker-nodemcu-build/blob/master/LICENSE)
 
@@ -6,25 +25,33 @@ It can also create LFS images from your Lua sources.
 
 [中文文档请参阅 README-CN.md](README-CN.md)
 
-* [Usage](#usage)
-  * [Install Docker](#install-docker)
-  * [Clone the NodeMCU firmware repository](#clone-the-nodemcu-firmware-repository)
-  * [Build for ESP8266](#build-for-esp8266)
-     * [Configure modules and features](#configure-modules-and-features)
-     * [Build the firmware](#build-the-firmware)
-     * [Create an LFS image for ESP8266](#create-an-lfs-image-for-esp8266)
-  * [Build for ESP32](#build-for-esp32)
-     * [Configure modules and features](#configure-modules-and-features-1)
-     * [Build the firmware](#build-the-firmware-1)
-  * [Options](#options)
-  * [Notes for Windows users](#notes-for-windows-users)
-  * [Notes for macOS users](#notes-for-macos-users)
-* [Updating NodeMCU](#updating-nodemcu)
-  * [Starting over](#starting-over)
-  * [Attempt to preserve your changes](#attempt-to-preserve-your-changes)
-* [Support](#support)
-* [Credits](#credits)
-* [Author](#author)
+- [Docker NodeMCU build in a Github workflow](#docker-nodemcu-build-in-a-github-workflow)
+- [Docker NodeMCU build and LFS images](#docker-nodemcu-build-and-lfs-images)
+  - [Target audience](#target-audience)
+    - [:bangbang: Regular updates](#bangbang-regular-updates)
+- [Usage](#usage)
+  - [Install Docker](#install-docker)
+  - [Clone the NodeMCU firmware repository](#clone-the-nodemcu-firmware-repository)
+  - [Build for ESP8266](#build-for-esp8266)
+    - [Configure modules and features](#configure-modules-and-features)
+    - [Build the firmware](#build-the-firmware)
+      - [Output](#output)
+      - [Flash the firmware](#flash-the-firmware)
+    - [Create an LFS image for ESP8266](#create-an-lfs-image-for-esp8266)
+      - [Output](#output-1)
+  - [Build for ESP32](#build-for-esp32)
+    - [Configure modules and features](#configure-modules-and-features-1)
+    - [Build the firmware](#build-the-firmware-1)
+    - [Output](#output-2)
+  - [Options](#options)
+  - [Notes for Windows users](#notes-for-windows-users)
+  - [Notes for macOS users](#notes-for-macos-users)
+- [Updating NodeMCU](#updating-nodemcu)
+  - [Starting over](#starting-over)
+  - [Attempt to preserve your changes](#attempt-to-preserve-your-changes)
+- [Support](#support)
+- [Credits](#credits)
+- [Author](#author)
 
 
 ## Target audience

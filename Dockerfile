@@ -1,7 +1,5 @@
-# see https://hub.docker.com/_/ubuntu/ for versions, should be the same as on GitHub for NodeMCU CI
-# 22.04 == jammy
-FROM ubuntu:20.04
-LABEL maintainer="marcelstoer"
+FROM debian:bookworm
+LABEL maintainer="matthias.goebl@goebl.net"
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -23,16 +21,28 @@ RUN apt-get update && apt-get install -y --no-install-recommends python3 python-
 # https://nodemcu.readthedocs.io/en/dev-esp32/build/#ubuntu
 # and
 # https://docs.espressif.com/projects/esp-idf/en/release-v4.4/esp32/get-started/linux-setup.html#install-prerequisites
-RUN apt-get install -y --no-install-recommends flex bison gperf python3-pip python3-dev python3-setuptools cmake ninja-build ccache build-essential libffi-dev libssl-dev dfu-util libncurses5-dev libncursesw5-dev libreadline-dev libusb-1.0-0
+RUN apt-get install -y --no-install-recommends flex bison gperf python3-pip python3-dev python3-setuptools cmake ninja-build ccache build-essential libffi-dev libssl-dev dfu-util libncurses5-dev libncursesw5-dev libreadline-dev libusb-1.0-0 \
+ && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/cache/apt/archives/*
 
-RUN pip install --upgrade pip
+RUN adduser --system --disabled-password --shell /bin/bash --home /opt nodemcu \
+ && chown nodemcu /opt
+USER nodemcu
 
-RUN mkdir /opt/nodemcu-firmware
+WORKDIR /opt
+RUN git clone --recurse-submodules https://github.com/nodemcu/nodemcu-firmware.git --branch dev-esp32
+
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends python3-venv
+USER nodemcu
+
 WORKDIR /opt/nodemcu-firmware
+RUN ./sdk/esp32-esp-idf/install.sh
 
-RUN rm -rf /root
-RUN ln -s /tmp /root
-ENV PATH="/opt:${PATH}"
+RUN export IDF_PATH=/opt/nodemcu-firmware/sdk/esp32-esp-idf \
+ && . ./sdk/esp32-esp-idf/export.sh \
+ && python3 -m pip install --upgrade pip \
+ && python3 -m pip install setuptools \
+ && python3 -m pip install -r /opt/nodemcu-firmware/requirements.txt
 
 COPY cmd.sh /opt/
 COPY read.me /opt/
@@ -42,8 +52,5 @@ COPY build-esp8266 /opt/
 COPY configure-esp32 /opt/
 COPY lfs-image /opt/
 
-# Release some space...
-RUN apt-get clean \
- && rm -rf /var/lib/apt/lists/*
-
+ENV PATH="/opt:${PATH}"
 CMD ["/opt/cmd.sh"]
